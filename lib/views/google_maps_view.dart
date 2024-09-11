@@ -20,10 +20,13 @@ class _GoogleMapsViewState extends State<GoogleMapsView> {
     super.initState();
   }
 
+  Set<Marker> markers = {};
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
+          markers: markers,
           onMapCreated: (controller) {
             googleMapController = controller;
             updateCurrentLocation();
@@ -36,13 +39,19 @@ class _GoogleMapsViewState extends State<GoogleMapsView> {
   void updateCurrentLocation() async {
     try {
       var locationData = await locationService.getLocation();
-      var cameraPosition = CameraPosition(
-          zoom: 16,
-          target: LatLng(locationData.latitude!, locationData.longitude!));
+      var currentPosition =
+          LatLng(locationData.latitude!, locationData.longitude!);
+      var marker = Marker(
+          markerId: const MarkerId("myMarker"), position: currentPosition);
+      var cameraPosition = CameraPosition(zoom: 16, target: currentPosition);
       googleMapController
           .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+      markers.add(marker);
+      setState(() {});
     } on LocationServiceException catch (e) {
     } on LocationPermissionException catch (e) {
-    } catch (e) {}
+    } catch (e) {
+      
+    }
   }
 }

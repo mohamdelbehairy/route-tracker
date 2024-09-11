@@ -12,11 +12,11 @@ class GoogleMapsView extends StatefulWidget {
 class _GoogleMapsViewState extends State<GoogleMapsView> {
   late CameraPosition initialCameraPosition;
   late LocationService locationService;
+  late GoogleMapController googleMapController;
   @override
   void initState() {
     initialCameraPosition = const CameraPosition(target: LatLng(0, 0));
     locationService = LocationService();
-    updateCurrentLocation();
     super.initState();
   }
 
@@ -24,6 +24,10 @@ class _GoogleMapsViewState extends State<GoogleMapsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
+          onMapCreated: (controller) {
+            googleMapController = controller;
+            updateCurrentLocation();
+          },
           zoomControlsEnabled: false,
           initialCameraPosition: initialCameraPosition),
     );
@@ -31,7 +35,12 @@ class _GoogleMapsViewState extends State<GoogleMapsView> {
 
   void updateCurrentLocation() async {
     try {
-      var LocationData = await locationService.getLocation();
+      var locationData = await locationService.getLocation();
+      var cameraPosition = CameraPosition(
+          zoom: 16,
+          target: LatLng(locationData.latitude!, locationData.longitude!));
+      googleMapController
+          .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     } on LocationServiceException catch (e) {
     } on LocationPermissionException catch (e) {
     } catch (e) {}
